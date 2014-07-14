@@ -1,3 +1,34 @@
+////////////////////////////////////////////////////////////////////////////////
+// 
+// AVR Current Meter
+//
+// (c) 2014 Charles Franklin
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+// FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+// This program reads three analog values, scales them, then prints them to
+// an LCD
+//
+////////////////////////////////////////////////////////////////////////////////
+
+
 #define F_CPU 8000000UL
 
 #include <avr/io.h>
@@ -7,16 +38,17 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define LCDPort	PORTD
-#define LCDrs 	PD6
-#define LCDen	PD5
+#define LCDPort	PORTD	// The port for the LCD control pins
+#define LCDrs 	PD6		// The rs pin
+#define LCDen	PD5		// The en pin
 
-#define pin_set(port, pin) port |= 1 << (pin);
-#define pin_clr(port, pin) port &= ~(1 << (pin));
+#define pin_set(port, pin) port |= 1 << (pin);		// Sets pin on port
+#define pin_clr(port, pin) port &= ~(1 << (pin));	// Clears pin on port
 
 #define delay_ms _delay_ms
 
-#define WAIT 500
+#define WAIT 	500		// Time between measurements
+#define SCALE	5		// Maximum input voltage by which to scale
 
 void lcdInit(void);
 void lcdSendByte(uint8_t reg, uint8_t byte);
@@ -42,13 +74,13 @@ int main(void) {
 		int i;
 		for (i = 3; i < 6; i++) {
 			// Loop through each pin
-			double val = adcRead(i);			// Read value
+			double val = adcRead(i);				// Read value
 			char str_val[6];
-			dtostrf(val*5/1023, 5, 2, str_val);	// Convert to string
+			dtostrf(val*SCALE/1023, 5, 2, str_val);	// Convert to string
 			if (i == 5) {
-				lcdSendByte(0, 0xC0);			// Second Row
+				lcdSendByte(0, 0xC0);				// Second Row
 			}
-			lcdPut(i + 0x30);					// Convert to ascii
+			lcdPut(i + 0x30);						// Convert to ascii
 			lcdPuts(":");
 			lcdPuts(str_val);
 			lcdPut(' ');
